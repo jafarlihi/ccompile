@@ -8,15 +8,15 @@
 #undef EOF
 
 typedef enum TokenKind {
-  OBRACE,
-  CBRACE,
-  OPARAN,
-  CPARAN,
-  SEMICOL,
-  KEYWORD,
-  ID,
-  INTL,
-  EOF,
+  OBRACE, // 0
+  CBRACE, // 1
+  OPARAN, // 2
+  CPARAN, // 3
+  SEMICOL, // 4
+  KEYWORD, // 5
+  ID, // 6
+  INTL, // 7
+  EOF, // 8
 } TokenKind;
 
 typedef struct Token {
@@ -47,6 +47,12 @@ Token *makeStrToken(TokenKind kind, char *str_value) {
 }
 
 Token *lex() {
+  while (lexer_content[lexer_position] == ' ' || lexer_content[lexer_position] == '\n')
+    lexer_position++;
+
+  if (lexer_content[lexer_position] == '\0')
+    return makeToken(EOF);
+
   switch (lexer_content[lexer_position]) {
     case '{':
       lexer_position++;
@@ -67,7 +73,7 @@ Token *lex() {
 
   if (isdigit(lexer_content[lexer_position])) {
     // TODO: Read value
-    while (isdigit(lexer_content[lexer_position + 1]))
+    while (isdigit(lexer_content[lexer_position]))
       lexer_position++;
     return makeToken(INTL);
   }
@@ -107,6 +113,8 @@ int main(int argc, char *argv[]) {
   do {
     token = lex();
     printf("%d\n", token->kind);
+    if (token->kind == KEYWORD || token->kind == ID)
+      printf("%s\n", token->str_value);
   } while (token->kind != EOF);
 
   return 0;
