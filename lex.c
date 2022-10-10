@@ -64,13 +64,15 @@ Token *lex() {
 
   if (isalpha(lexer_content[lexer_position])) {
     if (strncmp(lexer_content + lexer_position, "int", 3) == 0) {
-      lexer_position += 3;
-      if (isspace(lexer_content[lexer_position + 1]) || lexer_content[lexer_position + 1] == '\0')
+      if (isspace(lexer_content[lexer_position + 3]) || lexer_content[lexer_position + 3] == '\0') {
+        lexer_position += 3;
         return makeStrToken(KEYWORD, "int");
+      }
     } else if (strncmp(lexer_content + lexer_position, "return", 6) == 0) {
-      lexer_position += 6;
-      if (isspace(lexer_content[lexer_position + 1])  || lexer_content[lexer_position + 1] == '\0')
+      if (isspace(lexer_content[lexer_position + 6]) || lexer_content[lexer_position + 6] == '\0') {
+        lexer_position += 6;
         return makeStrToken(KEYWORD, "return");
+      }
     }
   }
 
