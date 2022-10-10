@@ -47,6 +47,7 @@ ASTNode *function() {
   } else {
     return makeNode(ERR);
   }
+  return func;
 }
 
 ASTNode *program() {
