@@ -65,10 +65,12 @@ Token *lex() {
   if (isalpha(lexer_content[lexer_position])) {
     if (strncmp(lexer_content + lexer_position, "int", 3) == 0) {
       lexer_position += 3;
-      return makeStrToken(KEYWORD, "int");
+      if (isspace(lexer_content[lexer_position + 1]) || lexer_content[lexer_position + 1] == '\0')
+        return makeStrToken(KEYWORD, "int");
     } else if (strncmp(lexer_content + lexer_position, "return", 6) == 0) {
       lexer_position += 6;
-      return makeStrToken(KEYWORD, "return");
+      if (isspace(lexer_content[lexer_position + 1])  || lexer_content[lexer_position + 1] == '\0')
+        return makeStrToken(KEYWORD, "return");
     }
   }
 
