@@ -1,6 +1,31 @@
 #include "lex.h"
 #include "parse.h"
 
+char *astTypeToString(ASTType type) {
+  switch (type) {
+    case EXPR:
+      return "EXPR";
+    case STMT:
+      return "STMT";
+    case FUNC:
+      return "FUNC";
+    case PROG:
+      return "PROG";
+    case ERR:
+      return "ERR";
+  }
+}
+
+void printASTNode(ASTNode *node) {
+  if (node->s1)
+    printASTNode(node->s1);
+  if (node->s2)
+    printASTNode(node->s2);
+  if (node->s3)
+    printASTNode(node->s3);
+  printf("%s\n", astTypeToString(node->type));
+}
+
 int main(int argc, char *argv[]) {
   FILE *f = fopen(argv[1], "r");
   fseek(f, 0L, SEEK_END);
@@ -22,7 +47,7 @@ int main(int argc, char *argv[]) {
 
   ASTNode *ast = parse(fcontent);
 
-  printf("%d\n", ast->type);
+  printASTNode(ast);
 
   return 0;
 }

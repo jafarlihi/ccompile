@@ -4,7 +4,7 @@
 #include "lex.h"
 
 typedef enum ASTType {
-  EXP,
+  EXPR,
   STMT,
   FUNC,
   PROG,

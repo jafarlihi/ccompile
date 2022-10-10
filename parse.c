@@ -1,52 +1,37 @@
+#include "parse.h"
 #include "lex.h"
 
-typedef enum ASTType {
-  EXP,
-  STMT,
-  FUNC,
-  PROG,
-  ERR,
-} ASTType;
-
-typedef struct ASTNode {
-  ASTType type;
-  union {
-    int intval;
-    const char *strval;
-  } fields;
-  struct ASTNode *s1;
-  struct ASTNode *s2;
-  struct ASTNode *s3;
-} ASTNode;
-
-ASTNode *makeErr() {
-  ASTNode *err = malloc(sizeof(ASTNode));
-  err->type = ERR;
-  return err;
+ASTNode *makeNode(ASTType type) {
+  ASTNode *node = malloc(sizeof(ASTNode));
+  node->s1 = NULL;
+  node->s2 = NULL;
+  node->s3 = NULL;
+  node->type = type;
+  return node;
 }
 
 ASTNode *expression() {
-  ASTNode *expr = malloc(sizeof(ASTNode));
+  ASTNode *expr = makeNode(EXPR);
   Token *token = lex();
   if (token->kind != INTL)
-    return makeErr();
+    return makeNode(ERR);
   // expr->fields->intval = token->value;
   return expr;
 }
 
 ASTNode *statement() {
-  ASTNode *stmt = malloc(sizeof(ASTNode));
+  ASTNode *stmt = makeNode(STMT);
   Token *token = lex();
   if (token->kind != KEYWORD || strcmp(token->lexeme, "return") != 0)
-    return makeErr();
+    return makeNode(ERR);
   stmt->s1 = expression();
   if (lex()->kind != SEMICOL)
-    return makeErr();
+    return makeNode(ERR);
   return stmt;
 }
 
 ASTNode *function() {
-  ASTNode *func = malloc(sizeof(ASTNode));
+  ASTNode *func = makeNode(FUNC);
   Token *token = lex();
   if (token->kind == KEYWORD && strcmp(token->lexeme, "int") == 0) {
     token = lex();
@@ -55,18 +40,17 @@ ASTNode *function() {
       ASTNode *stmt = statement();
       func->s1 = stmt;
       if (lex()->kind != CBRACE)
-        return makeErr();
+        return makeNode(ERR);
     } else {
-      return makeErr();
+      return makeNode(ERR);
     }
   } else {
-    return makeErr();
+    return makeNode(ERR);
   }
 }
 
 ASTNode *program() {
-  ASTNode *prog = malloc(sizeof(ASTNode));
-  prog->type = PROG;
+  ASTNode *prog = makeNode(PROG);
   prog->s1 = function();
   return prog;
 }
