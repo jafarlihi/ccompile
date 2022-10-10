@@ -1,3 +1,5 @@
+#include "lex.h"
+
 #include <stddef.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -6,24 +8,6 @@
 #include <string.h>
 
 #undef EOF
-
-typedef enum TokenKind {
-  OBRACE, // 0
-  CBRACE, // 1
-  OPARAN, // 2
-  CPARAN, // 3
-  SEMICOL, // 4
-  KEYWORD, // 5
-  ID, // 6
-  INTL, // 7
-  EOF, // 8
-} TokenKind;
-
-typedef struct Token {
-  TokenKind kind;
-  char *str_value;
-  int value;
-} Token;
 
 char *lexer_content;
 size_t lexer_position;
@@ -39,10 +23,10 @@ Token *makeToken(TokenKind kind) {
   return result;
 }
 
-Token *makeStrToken(TokenKind kind, char *str_value) {
+Token *makeStrToken(TokenKind kind, char *lexeme) {
   Token *result = malloc(sizeof(Token));
   result->kind = kind;
-  result->str_value = str_value;
+  result->lexeme = lexeme;
   return result;
 }
 
@@ -88,34 +72,13 @@ Token *lex() {
     }
   }
 
-  char *str_value = malloc(64);
+  char *lexeme = malloc(64);
   int starting_lexer_position = lexer_position;
   do {
-    str_value[lexer_position - starting_lexer_position] = lexer_content[lexer_position];
+    lexeme[lexer_position - starting_lexer_position] = lexer_content[lexer_position];
     lexer_position++;
   } while(lexer_content[lexer_position] != ' ' && isalpha(lexer_content[lexer_position]));
-  str_value[lexer_position - starting_lexer_position] = '\0';
-  return makeStrToken(ID, str_value);
+  lexeme[lexer_position - starting_lexer_position] = '\0';
+  return makeStrToken(ID, lexeme);
 }
 
-int main(int argc, char *argv[]) {
-  FILE *f = fopen(argv[1], "r");
-  fseek(f, 0L, SEEK_END);
-  size_t fsize = ftell(f);
-  rewind(f);
-
-  char *fcontent = malloc(fsize + 1);
-  fread(fcontent, fsize, 1, f);
-  fclose(f);
-
-  initLexer(fcontent);
-  Token *token;
-  do {
-    token = lex();
-    printf("%d\n", token->kind);
-    if (token->kind == KEYWORD || token->kind == ID)
-      printf("%s\n", token->str_value);
-  } while (token->kind != EOF);
-
-  return 0;
-}
