@@ -15,7 +15,7 @@ void expression(ASTNode *ast, char *output) {
     }
   } else if (ast->exprType == CONSTANT) {
     sprintf(output + strlen(output), "movl $%d, %%eax\n", ast->fields.intval);
-  } else if (ast->exprType == BINARY_OP) {
+  } else if (ast->exprType == BINARY_OP && strcmp(ast->s1->fields.strval, "||") != 0 && strcmp(ast->s1->fields.strval, "&&") != 0) {
     expression(ast->s2, output);
     sprintf(output + strlen(output), "push %%rax\n");
     expression(ast->s3, output);
@@ -74,7 +74,7 @@ void expression(ASTNode *ast, char *output) {
       sprintf(output + strlen(output), "movl $0, %%eax\n");
       sprintf(output + strlen(output), "setge %%al\n");
     }
-  } else if (ast->exprType == BINARY_OP && strcmp(ast->s1->fields.strval, "&&") == 0) {
+  } else if (ast->exprType == BINARY_OP && strcmp(ast->s1->fields.strval, "||") == 0) {
     expression(ast->s2, output);
     sprintf(output + strlen(output), "cmpl $0, %%eax\n");
     sprintf(output + strlen(output), "je _c2\n");
@@ -86,7 +86,7 @@ void expression(ASTNode *ast, char *output) {
     sprintf(output + strlen(output), "movl $0, %%eax\n");
     sprintf(output + strlen(output), "setne %%al\n");
     sprintf(output + strlen(output), "_end:\n");
-  } else if (ast->exprType == BINARY_OP && strcmp(ast->s1->fields.strval, "||") == 0) {
+  } else if (ast->exprType == BINARY_OP && strcmp(ast->s1->fields.strval, "&&") == 0) {
     expression(ast->s2, output);
     sprintf(output + strlen(output), "cmpl $0, %%eax\n");
     sprintf(output + strlen(output), "jne _c2\n");

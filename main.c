@@ -90,8 +90,9 @@ int main(int argc, char *argv[]) {
       }
     }
     generate(ast, output);
+    //printf("%s\n", output);
     storeData("./assembly.s", output);
-    char cmd[100] = "gcc assembly.s -o ";
+    char cmd[100] = "gcc -g assembly.s -o ";
     strcat(cmd, path);
     system(cmd);
   }
