@@ -1,3 +1,5 @@
 *.gch
 a.out
+out
+assembly.s
 write_a_c_compiler/

@@ -3,6 +3,6 @@
 
 #include "parse.h"
 
-void generate(ASTNode *ast);
+void generate(ASTNode *ast, char *output);
 
 #endif
