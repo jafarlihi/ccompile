@@ -13,6 +13,8 @@ char *astTypeToString(ASTType type) {
       return "FUNC";
     case PROG:
       return "PROG";
+    case UNARY:
+      return "UNARY";
     case ERR:
       return "ERR";
   }

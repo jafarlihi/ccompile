@@ -10,13 +10,37 @@ ASTNode *makeNode(ASTType type) {
   return node;
 }
 
+ASTNode *unaryOp(Token *token) {
+  if (token->kind == NEG || token->kind == COMPL || token->kind == LNEG) {
+    ASTNode *unaryOp = makeNode(UNARY);
+    if (token->kind == NEG)
+      unaryOp->fields.charval = '-';
+    if (token->kind == COMPL)
+      unaryOp->fields.charval = '~';
+    if (token->kind == LNEG)
+      unaryOp->fields.charval = '!';
+    return unaryOp;
+  }
+  return makeNode(ERR);
+}
+
 ASTNode *expression() {
   ASTNode *expr = makeNode(EXPR);
   Token *token = lex();
-  if (token->kind != INTL)
+  if (token->kind == INTL) {
+    expr->fields.intval = token->value;
+    expr->exprType = CONSTANT;
+    return expr;
+  } else if (token->kind == NEG || token->kind == COMPL || token->kind == LNEG) {
+    ASTNode *unary = unaryOp(token);
+    ASTNode *innerExpr = expression();
+    expr->exprType = UNARY_OP;
+    expr->s1 = unary;
+    expr->s2 = innerExpr;
+    return expr;
+  } else {
     return makeNode(ERR);
-  expr->fields.intval = token->value;
-  return expr;
+  }
 }
 
 ASTNode *statement() {
@@ -24,6 +48,7 @@ ASTNode *statement() {
   Token *token = lex();
   if (token->kind != KEYWORD || strcmp(token->lexeme, "return") != 0)
     return makeNode(ERR);
+  stmt->stmtType = RETURN;
   stmt->s1 = expression();
   if (lex()->kind != SEMICOL)
     return makeNode(ERR);

@@ -8,15 +8,28 @@ typedef enum ASTType {
   STMT,
   FUNC,
   PROG,
+  UNARY,
   ERR,
 } ASTType;
+
+typedef enum ExprType {
+  CONSTANT,
+  UNARY_OP,
+} ExprType;
+
+typedef enum StmtType {
+  RETURN,
+} StmtType;
 
 typedef struct ASTNode {
   ASTType type;
   union {
     int intval;
     const char *strval;
+    char charval;
   } fields;
+  ExprType exprType;
+  StmtType stmtType;
   struct ASTNode *s1;
   struct ASTNode *s2;
   struct ASTNode *s3;

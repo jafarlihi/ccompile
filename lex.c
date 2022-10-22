@@ -60,6 +60,15 @@ Token *lex() {
     case ';':
       lexer_position++;
       return makeToken(SEMICOL);
+    case '-':
+      lexer_position++;
+      return makeToken(NEG);
+    case '~':
+      lexer_position++;
+      return makeToken(COMPL);
+    case '!':
+      lexer_position++;
+      return makeToken(LNEG);
   }
 
   if (isdigit(lexer_content[lexer_position])) {

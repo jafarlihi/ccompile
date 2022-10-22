@@ -2,4 +2,5 @@
 a.out
 out
 assembly.s
+ccompiler
 write_a_c_compiler/

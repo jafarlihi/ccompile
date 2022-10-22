@@ -11,15 +11,18 @@
 #undef EOF
 
 typedef enum TokenKind {
-  OBRACE, // 0
-  CBRACE, // 1
-  OPARAN, // 2
-  CPARAN, // 3
-  SEMICOL, // 4
-  KEYWORD, // 5
-  ID, // 6
-  INTL, // 7
-  EOF, // 8
+  OBRACE,
+  CBRACE,
+  OPARAN,
+  CPARAN,
+  SEMICOL,
+  KEYWORD,
+  ID,
+  INTL,
+  NEG,
+  COMPL,
+  LNEG,
+  EOF,
 } TokenKind;
 
 typedef struct Token {
