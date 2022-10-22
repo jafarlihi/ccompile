@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include <math.h>
 
 #undef EOF
 
@@ -69,6 +70,15 @@ Token *lex() {
     case '!':
       lexer_position++;
       return makeToken(LNEG);
+    case '+':
+      lexer_position++;
+      return makeToken(ADD);
+    case '*':
+      lexer_position++;
+      return makeToken(MUL);
+    case '/':
+      lexer_position++;
+      return makeToken(DIV);
   }
 
   if (isdigit(lexer_content[lexer_position])) {
@@ -100,5 +110,17 @@ Token *lex() {
   } while(lexer_content[lexer_position] != ' ' && isalpha(lexer_content[lexer_position]));
   lexeme[lexer_position - starting_lexer_position] = '\0';
   return makeStrToken(ID, lexeme);
+}
+
+Token *peek() {
+  Token *lexed = lex();
+  if (lexed->kind == ID || lexed->kind == KEYWORD) {
+    lexer_position -= strlen(lexed->lexeme);
+  } else if (lexed->kind == INTL) {
+    lexer_position -= floor(log10(abs(lexed->value))) + 1;
+  } else {
+    lexer_position--;
+  }
+  return lexed;
 }
 

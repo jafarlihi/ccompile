@@ -22,6 +22,9 @@ typedef enum TokenKind {
   NEG,
   COMPL,
   LNEG,
+  ADD,
+  MUL,
+  DIV,
   EOF,
 } TokenKind;
 
@@ -33,5 +36,6 @@ typedef struct Token {
 
 void initLexer(char *content);
 Token *lex();
+Token *peek();
 
 #endif

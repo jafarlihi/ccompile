@@ -1,6 +1,8 @@
 #include "parse.h"
 #include "lex.h"
 
+ASTNode *expression();
+
 ASTNode *makeNode(ASTType type) {
   ASTNode *node = malloc(sizeof(ASTNode));
   node->s1 = NULL;
@@ -24,23 +26,79 @@ ASTNode *unaryOp(Token *token) {
   return makeNode(ERR);
 }
 
-ASTNode *expression() {
-  ASTNode *expr = makeNode(EXPR);
-  Token *token = lex();
-  if (token->kind == INTL) {
-    expr->fields.intval = token->value;
+ASTNode *binaryOp(Token *token) {
+  if (token->kind == ADD || token->kind == NEG || token->kind == MUL || token->kind == DIV) {
+    ASTNode *binaryOp = makeNode(BINARY);
+    if (token->kind == ADD)
+      binaryOp->fields.charval = '+';
+    if (token->kind == NEG)
+      binaryOp->fields.charval = '-';
+    if (token->kind == MUL)
+      binaryOp->fields.charval = '*';
+    if (token->kind == DIV)
+      binaryOp->fields.charval = '/';
+    return binaryOp;
+  }
+  return makeNode(ERR);
+}
+
+ASTNode *factor() {
+  Token *next = lex();
+  if (next->kind == OPARAN) {
+    ASTNode *expr = expression();
+    if (lex()->kind != CPARAN) {
+      return makeNode(ERR);
+    }
+    return expr;
+  } else if (next->kind == INTL) {
+    ASTNode *expr = makeNode(EXPR);
+    expr->fields.intval = next->value;
     expr->exprType = CONSTANT;
     return expr;
-  } else if (token->kind == NEG || token->kind == COMPL || token->kind == LNEG) {
-    ASTNode *unary = unaryOp(token);
-    ASTNode *innerExpr = expression();
+  } else {
+    ASTNode *unary = unaryOp(next);
+    if (unary->type == ERR) return unary;
+    ASTNode *factorN = factor();
+    ASTNode *expr = makeNode(EXPR);
     expr->exprType = UNARY_OP;
     expr->s1 = unary;
-    expr->s2 = innerExpr;
+    expr->s2 = factorN;
     return expr;
-  } else {
-    return makeNode(ERR);
   }
+}
+
+ASTNode *term() {
+  ASTNode *factorN = factor();
+  Token *next = peek();
+  while (next->kind == MUL || next->kind == DIV) {
+    ASTNode *binary = binaryOp(lex());
+    ASTNode *nextFactor = factor();
+    ASTNode *expr = makeNode(EXPR);
+    expr->exprType = BINARY_OP;
+    expr->s1 = binary;
+    expr->s2 = factorN;
+    expr->s3 = nextFactor;
+    factorN = expr;
+    next = peek();
+  }
+  return factorN;
+}
+
+ASTNode *expression() {
+  ASTNode *termN = term();
+  Token *next = peek();
+  while (next->kind == ADD || next->kind == NEG) {
+    ASTNode *binary = binaryOp(lex());
+    ASTNode *nextTerm = term();
+    ASTNode *expr = makeNode(EXPR);
+    expr->exprType = BINARY_OP;
+    expr->s1 = binary;
+    expr->s2 = termN;
+    expr->s3 = nextTerm;
+    termN = expr;
+    next = peek();
+  }
+  return termN;
 }
 
 ASTNode *statement() {

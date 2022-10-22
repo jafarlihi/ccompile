@@ -15,6 +15,8 @@ char *astTypeToString(ASTType type) {
       return "PROG";
     case UNARY:
       return "UNARY";
+    case BINARY:
+      return "BINARY";
     case ERR:
       return "ERR";
   }
@@ -78,7 +80,7 @@ int main(int argc, char *argv[]) {
 
   //printASTNode(ast);
 
-  char *output = malloc(2048);
+  char *output = calloc(2048, sizeof(char));
   if (!hasError(ast)) {
     char *path = strdup(argv[1]);
     for (int i = 1; i < strlen(path); i++) {

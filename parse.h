@@ -9,12 +9,14 @@ typedef enum ASTType {
   FUNC,
   PROG,
   UNARY,
+  BINARY,
   ERR,
 } ASTType;
 
 typedef enum ExprType {
   CONSTANT,
   UNARY_OP,
+  BINARY_OP,
 } ExprType;
 
 typedef enum StmtType {

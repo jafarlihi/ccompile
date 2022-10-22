@@ -15,6 +15,27 @@ void expr(ASTNode *ast, char *output) {
     }
   } else if (ast->exprType == CONSTANT) {
     sprintf(output + strlen(output), "movl $%d, %%eax\n", ast->fields.intval);
+  } else if (ast->exprType == BINARY_OP) {
+    expr(ast->s2, output);
+    sprintf(output + strlen(output), "push %%rax\n");
+    expr(ast->s3, output);
+    if (ast->s1->fields.charval == '-') {
+      sprintf(output + strlen(output), "movl %%eax, %%ecx\n");
+      sprintf(output + strlen(output), "pop %%rax\n");
+      sprintf(output + strlen(output), "subl %%ecx, %%eax\n");
+    }
+    if (ast->s1->fields.charval == '+') {
+      sprintf(output + strlen(output), "pop %%rcx\n");
+      sprintf(output + strlen(output), "addl %%ecx, %%eax\n");
+    }
+    if (ast->s1->fields.charval == '*') {
+      sprintf(output + strlen(output), "pop %%rcx\n");
+      sprintf(output + strlen(output), "imul %%ecx, %%eax\n");
+    }
+    if (ast->s1->fields.charval == '/') {
+      sprintf(output + strlen(output), "pop %%rcx\n");
+      sprintf(output + strlen(output), "\n");
+    }
   }
 }
 
