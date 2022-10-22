@@ -1,5 +1,6 @@
 #include "lex.h"
 #include "parse.h"
+#include "codegen.h"
 
 char *astTypeToString(ASTType type) {
   switch (type) {
@@ -36,6 +37,7 @@ int main(int argc, char *argv[]) {
   fread(fcontent, fsize, 1, f);
   fclose(f);
 
+  /*
   initLexer(fcontent);
   Token *token;
   do {
@@ -47,10 +49,13 @@ int main(int argc, char *argv[]) {
       printf(" - %d", token->value);
     printf("\n");
   } while (token->kind != EOF);
+  */
 
   ASTNode *ast = parse(fcontent);
 
-  printASTNode(ast);
+  //printASTNode(ast);
+
+  generate(ast);
 
   return 0;
 }

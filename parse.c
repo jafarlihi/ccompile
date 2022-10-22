@@ -15,7 +15,7 @@ ASTNode *expression() {
   Token *token = lex();
   if (token->kind != INTL)
     return makeNode(ERR);
-  // expr->fields->intval = token->value;
+  expr->fields.intval = token->value;
   return expr;
 }
 

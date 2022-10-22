@@ -1,8 +1,8 @@
 #ifndef CODEGEN_H
 #define CODEGEN_H
 
-typedef enum AASTType {
+#include "parse.h"
 
-} AASTType;
+void generate(ASTNode *ast);
 
 #endif
