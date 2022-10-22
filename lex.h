@@ -25,6 +25,17 @@ typedef enum TokenKind {
   ADD,
   MUL,
   DIV,
+  AND,
+  OR,
+  EQ,
+  NEQ,
+  LE,
+  LEE,
+  GE,
+  GEE,
+  AMP,
+  PIPE,
+  ASNG,
   EOF,
 } TokenKind;
 

@@ -69,6 +69,10 @@ Token *lex() {
       return makeToken(COMPL);
     case '!':
       lexer_position++;
+      if (lexer_content[lexer_position] == '=') {
+        lexer_position++;
+        return makeToken(NEQ);
+      }
       return makeToken(LNEG);
     case '+':
       lexer_position++;
@@ -79,6 +83,41 @@ Token *lex() {
     case '/':
       lexer_position++;
       return makeToken(DIV);
+    case '&':
+      lexer_position++;
+      if (lexer_content[lexer_position] == '&') {
+        lexer_position++;
+        return makeToken(AND);
+      }
+      return makeToken(AMP);
+    case '|':
+      lexer_position++;
+      if (lexer_content[lexer_position] == '|') {
+        lexer_position++;
+        return makeToken(OR);
+      }
+      return makeToken(PIPE);
+    case '=':
+      lexer_position++;
+      if (lexer_content[lexer_position] == '=') {
+        lexer_position++;
+        return makeToken(EQ);
+      }
+      return makeToken(ASNG);
+    case '<':
+      lexer_position++;
+      if (lexer_content[lexer_position] == '=') {
+        lexer_position++;
+        return makeToken(LEE);
+      }
+      return makeToken(LE);
+    case '>':
+      lexer_position++;
+      if (lexer_content[lexer_position] == '=') {
+        lexer_position++;
+        return makeToken(GEE);
+      }
+      return makeToken(GE);
   }
 
   if (isdigit(lexer_content[lexer_position])) {
@@ -118,6 +157,8 @@ Token *peek() {
     lexer_position -= strlen(lexed->lexeme);
   } else if (lexed->kind == INTL) {
     lexer_position -= floor(log10(abs(lexed->value))) + 1;
+  } else if (lexed->kind == AND || lexed->kind == OR || lexed->kind == EQ || lexed->kind == NEQ || lexed->kind == LEE || lexed->kind == GEE) {
+    lexer_position -= 2;
   } else {
     lexer_position--;
   }

@@ -1,7 +1,8 @@
 #include "parse.h"
 #include "lex.h"
 
-ASTNode *expression();
+ASTNode *additiveExp();
+ASTNode *expr();
 
 ASTNode *makeNode(ASTType type) {
   ASTNode *node = malloc(sizeof(ASTNode));
@@ -9,6 +10,9 @@ ASTNode *makeNode(ASTType type) {
   node->s2 = NULL;
   node->s3 = NULL;
   node->type = type;
+  node->fields.intval = 0;
+  node->fields.charval = '\0';
+  node->fields.strval = "\0";
   return node;
 }
 
@@ -27,29 +31,56 @@ ASTNode *unaryOp(Token *token) {
 }
 
 ASTNode *binaryOp(Token *token) {
-  if (token->kind == ADD || token->kind == NEG || token->kind == MUL || token->kind == DIV) {
-    ASTNode *binaryOp = makeNode(BINARY);
-    if (token->kind == ADD)
+  ASTNode *binaryOp = makeNode(BINARY);
+  switch (token->kind) {
+    case ADD:
       binaryOp->fields.charval = '+';
-    if (token->kind == NEG)
+      break;
+    case NEG:
       binaryOp->fields.charval = '-';
-    if (token->kind == MUL)
+      break;
+    case MUL:
       binaryOp->fields.charval = '*';
-    if (token->kind == DIV)
+      break;
+    case DIV:
       binaryOp->fields.charval = '/';
-    return binaryOp;
+      break;
+    case AND:
+      binaryOp->fields.strval = "&&";
+      break;
+    case OR:
+      binaryOp->fields.strval = "||";
+      break;
+    case EQ:
+      binaryOp->fields.strval = "==";
+      break;
+    case NEQ:
+      binaryOp->fields.strval = "!=";
+      break;
+    case LE:
+      binaryOp->fields.charval = '<';
+      break;
+    case LEE:
+      binaryOp->fields.strval = "<=";
+      break;
+    case GE:
+      binaryOp->fields.charval = '>';
+      break;
+    case GEE:
+      binaryOp->fields.strval = ">=";
+      break;
   }
-  return makeNode(ERR);
+  return binaryOp->fields.charval || binaryOp->fields.strval ? binaryOp : makeNode(ERR);
 }
 
 ASTNode *factor() {
   Token *next = lex();
   if (next->kind == OPARAN) {
-    ASTNode *expr = expression();
+    ASTNode *exprN = expr();
     if (lex()->kind != CPARAN) {
       return makeNode(ERR);
     }
-    return expr;
+    return exprN;
   } else if (next->kind == INTL) {
     ASTNode *expr = makeNode(EXPR);
     expr->fields.intval = next->value;
@@ -65,6 +96,74 @@ ASTNode *factor() {
     expr->s2 = factorN;
     return expr;
   }
+}
+
+ASTNode *relexp() {
+  ASTNode *addexpN = additiveExp();
+  Token *next = peek();
+  while (next->kind == LE || next->kind == LEE || next->kind == GE || next->kind == GEE) {
+    ASTNode *binary = binaryOp(lex());
+    ASTNode *nextAddexp = additiveExp();
+    ASTNode *expr = makeNode(EXPR);
+    expr->exprType = BINARY_OP;
+    expr->s1 = binary;
+    expr->s2 = addexpN;
+    expr->s3 = nextAddexp;
+    addexpN = expr;
+    next = peek();
+  }
+  return addexpN;
+}
+
+ASTNode *eqexp() {
+  ASTNode *relexpN = relexp();
+  Token *next = peek();
+  while (next->kind == NEQ || next->kind == EQ) {
+    ASTNode *binary = binaryOp(lex());
+    ASTNode *nextRelexp = relexp();
+    ASTNode *expr = makeNode(EXPR);
+    expr->exprType = BINARY_OP;
+    expr->s1 = binary;
+    expr->s2 = relexpN;
+    expr->s3 = nextRelexp;
+    relexpN = expr;
+    next = peek();
+  }
+  return relexpN;
+}
+
+ASTNode *landexp() {
+  ASTNode *eqexpN = eqexp();
+  Token *next = peek();
+  while (next->kind == AND) {
+    ASTNode *binary = binaryOp(lex());
+    ASTNode *nextEqexp = eqexp();
+    ASTNode *expr = makeNode(EXPR);
+    expr->exprType = BINARY_OP;
+    expr->s1 = binary;
+    expr->s2 = eqexpN;
+    expr->s3 = nextEqexp;
+    eqexpN = expr;
+    next = peek();
+  }
+  return eqexpN;
+}
+
+ASTNode *expr() {
+  ASTNode *landexpN = landexp();
+  Token *next = peek();
+  while (next->kind == OR) {
+    ASTNode *binary = binaryOp(lex());
+    ASTNode *nextLandexp = landexp();
+    ASTNode *expr = makeNode(EXPR);
+    expr->exprType = BINARY_OP;
+    expr->s1 = binary;
+    expr->s2 = landexpN;
+    expr->s3 = nextLandexp;
+    landexpN = expr;
+    next = peek();
+  }
+  return landexpN;
 }
 
 ASTNode *term() {
@@ -84,7 +183,7 @@ ASTNode *term() {
   return factorN;
 }
 
-ASTNode *expression() {
+ASTNode *additiveExp() {
   ASTNode *termN = term();
   Token *next = peek();
   while (next->kind == ADD || next->kind == NEG) {
@@ -107,7 +206,7 @@ ASTNode *statement() {
   if (token->kind != KEYWORD || strcmp(token->lexeme, "return") != 0)
     return makeNode(ERR);
   stmt->stmtType = RETURN;
-  stmt->s1 = expression();
+  stmt->s1 = expr();
   if (lex()->kind != SEMICOL)
     return makeNode(ERR);
   return stmt;
