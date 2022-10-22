@@ -78,9 +78,18 @@ int main(int argc, char *argv[]) {
 
   char *output = malloc(2048);
   if (!hasError(ast)) {
+    char *path = strdup(argv[1]);
+    for (int i = 1; i < strlen(path); i++) {
+      if (path[i] == '.') {
+        path[i] = '\0';
+        break;
+      }
+    }
     generate(ast, output);
     storeData("./assembly.s", output);
-    system("gcc assembly.s -o out");
+    char cmd[100] = "gcc assembly.s -o ";
+    strcat(cmd, path);
+    system(cmd);
   }
 
   return 0;
