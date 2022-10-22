@@ -50,7 +50,7 @@ void expression(ASTNode *ast, char *output) {
       sprintf(output + strlen(output), "movl $0, %%eax\n");
       sprintf(output + strlen(output), "setne %%al\n");
     }
-    if (strcmp(ast->s1->fields.strval, "<") == 0) {
+    if (ast->s1->fields.charval == '<') {
       sprintf(output + strlen(output), "pop %%rcx\n");
       sprintf(output + strlen(output), "cmpl %%eax, %%ecx\n");
       sprintf(output + strlen(output), "movl $0, %%eax\n");
@@ -62,7 +62,7 @@ void expression(ASTNode *ast, char *output) {
       sprintf(output + strlen(output), "movl $0, %%eax\n");
       sprintf(output + strlen(output), "setle %%al\n");
     }
-    if (strcmp(ast->s1->fields.strval, ">") == 0) {
+    if (ast->s1->fields.charval == '>') {
       sprintf(output + strlen(output), "pop %%rcx\n");
       sprintf(output + strlen(output), "cmpl %%eax, %%ecx\n");
       sprintf(output + strlen(output), "movl $0, %%eax\n");
