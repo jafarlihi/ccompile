@@ -33,8 +33,10 @@ void expr(ASTNode *ast, char *output) {
       sprintf(output + strlen(output), "imul %%ecx, %%eax\n");
     }
     if (ast->s1->fields.charval == '/') {
-      sprintf(output + strlen(output), "pop %%rcx\n");
-      sprintf(output + strlen(output), "\n");
+      sprintf(output + strlen(output), "movl %%eax, %%ecx\n");
+      sprintf(output + strlen(output), "pop %%rax\n");
+      sprintf(output + strlen(output), "cdq\n");
+      sprintf(output + strlen(output), "idivl %%ecx\n");
     }
   }
 }
