@@ -30,6 +30,13 @@ Token *makeStrToken(TokenKind kind, char *lexeme) {
   return result;
 }
 
+Token *makeIntToken(TokenKind kind, int value) {
+  Token *result = malloc(sizeof(Token));
+  result->kind = kind;
+  result->value = value;
+  return result;
+}
+
 Token *lex() {
   while (lexer_content[lexer_position] == ' ' || lexer_content[lexer_position] == '\n')
     lexer_position++;
@@ -56,10 +63,10 @@ Token *lex() {
   }
 
   if (isdigit(lexer_content[lexer_position])) {
-    // TODO: Read value
+    int value = strtol(lexer_content + lexer_position, NULL, 10);
     while (isdigit(lexer_content[lexer_position]))
       lexer_position++;
-    return makeToken(INTL);
+    return makeIntToken(INTL, value);
   }
 
   if (isalpha(lexer_content[lexer_position])) {

@@ -17,13 +17,13 @@ char *astTypeToString(ASTType type) {
 }
 
 void printASTNode(ASTNode *node) {
+  printf("%s\n", astTypeToString(node->type));
   if (node->s1)
     printASTNode(node->s1);
   if (node->s2)
     printASTNode(node->s2);
   if (node->s3)
     printASTNode(node->s3);
-  printf("%s\n", astTypeToString(node->type));
 }
 
 int main(int argc, char *argv[]) {
@@ -40,9 +40,12 @@ int main(int argc, char *argv[]) {
   Token *token;
   do {
     token = lex();
-    printf("%d\n", token->kind);
+    printf("%d", token->kind);
     if (token->kind == KEYWORD || token->kind == ID)
-      printf("%s\n", token->lexeme);
+      printf(" - %s", token->lexeme);
+    if (token->kind == INTL)
+      printf(" - %d", token->value);
+    printf("\n");
   } while (token->kind != EOF);
 
   ASTNode *ast = parse(fcontent);
