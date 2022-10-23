@@ -1,4 +1,5 @@
 #include "codegen.h"
+#include <stdbool.h>
 
 int labelCounter = 0;
 
@@ -106,10 +107,14 @@ void expression(ASTNode *ast, char *output) {
   }
 }
 
+bool shouldRet = false;
+
 void generate(ASTNode *ast, char *output) {
   if (ast->type == FUNC) {
     sprintf(output + strlen(output), ".globl %s\n", ast->fields.strval);
     sprintf(output + strlen(output), "%s:\n", ast->fields.strval);
+    sprintf(output + strlen(output), "push %%rbp\n");
+    sprintf(output + strlen(output), "movq %%rsp, %%rbp\n");
   }
   if (ast->type == STMT && ast->stmtType == RETURN) {
     expression(ast->s1, output);
@@ -125,6 +130,12 @@ void generate(ASTNode *ast, char *output) {
       generate(ast->ss->array[i], output);
     }
   if (ast->type == STMT && ast->stmtType == RETURN)
-    sprintf(output + strlen(output), "ret\n");
+    shouldRet = true;
+  if (ast->type == FUNC) {
+    sprintf(output + strlen(output), "movq %%rbp, %%rsp\n");
+    sprintf(output + strlen(output), "pop %%rbp\n");
+    if (shouldRet)
+      sprintf(output + strlen(output), "ret\n");
+  }
 }
 
