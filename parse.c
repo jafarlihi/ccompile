@@ -1,3 +1,4 @@
+#include "array.h"
 #include "parse.h"
 #include "lex.h"
 
@@ -73,27 +74,12 @@ ASTNode *binaryOp(Token *token) {
   return binaryOp->fields.charval || binaryOp->fields.strval ? binaryOp : makeNode(ERR);
 }
 
-void initArray(Array *a, size_t initialSize) {
-  a->array = malloc(initialSize * sizeof(ASTNode *));
-  a->used = 0;
-  a->size = initialSize;
-}
-
-void insertArray(Array *a, ASTNode* node) {
-  if (a->used == a->size) {
-    a->size *= 2;
-    a->array = realloc(a->array, a->size * sizeof(ASTNode *));
-  }
-  a->array[a->used++] = node;
-}
-
-void freeArray(Array *a) {
-  free(a->array);
-  a->array = NULL;
-  a->used = a->size = 0;
-}
-
 ASTNode *ident() {
+
+  #ifdef DEBUG
+  printf("%s\n", __func__);
+  #endif
+
   Token *next = lex();
   if (next->kind != ID)
     return makeNode(ERR);
@@ -103,8 +89,14 @@ ASTNode *ident() {
 }
 
 ASTNode *pexpression() {
+
+  #ifdef DEBUG
+  printf("%s\n", __func__);
+  #endif
+
   Token *next = peek();
-  if (next->kind == ID) {
+  Token *nextNext = peekSecond();
+  if (next->kind == ID && nextNext->kind == ASNG) {
     ASTNode *identN = ident();
     next = lex();
     if (next->kind != ASNG)
@@ -120,6 +112,11 @@ ASTNode *pexpression() {
 }
 
 ASTNode *factor() {
+
+  #ifdef DEBUG
+  printf("%s\n", __func__);
+  #endif
+
   Token *next = peek();
   if (next->kind == OPARAN) {
     lex();
@@ -150,6 +147,11 @@ ASTNode *factor() {
 }
 
 ASTNode *relexp() {
+
+  #ifdef DEBUG
+  printf("%s\n", __func__);
+  #endif
+
   ASTNode *addexpN = additiveExp();
   Token *next = peek();
   while (next->kind == LE || next->kind == LEE || next->kind == GE || next->kind == GEE) {
@@ -167,6 +169,11 @@ ASTNode *relexp() {
 }
 
 ASTNode *eqexp() {
+
+  #ifdef DEBUG
+  printf("%s\n", __func__);
+  #endif
+
   ASTNode *relexpN = relexp();
   Token *next = peek();
   while (next->kind == NEQ || next->kind == EQ) {
@@ -184,6 +191,11 @@ ASTNode *eqexp() {
 }
 
 ASTNode *landexp() {
+
+  #ifdef DEBUG
+  printf("%s\n", __func__);
+  #endif
+
   ASTNode *eqexpN = eqexp();
   Token *next = peek();
   while (next->kind == AND) {
@@ -201,6 +213,11 @@ ASTNode *landexp() {
 }
 
 ASTNode *lorexp() {
+
+  #ifdef DEBUG
+  printf("%s\n", __func__);
+  #endif
+
   ASTNode *landexpN = landexp();
   Token *next = peek();
   while (next->kind == OR) {
@@ -218,6 +235,11 @@ ASTNode *lorexp() {
 }
 
 ASTNode *term() {
+
+  #ifdef DEBUG
+  printf("%s\n", __func__);
+  #endif
+
   ASTNode *factorN = factor();
   Token *next = peek();
   while (next->kind == MUL || next->kind == DIV) {
@@ -235,6 +257,11 @@ ASTNode *term() {
 }
 
 ASTNode *additiveExp() {
+
+  #ifdef DEBUG
+  printf("%s\n", __func__);
+  #endif
+
   ASTNode *termN = term();
   Token *next = peek();
   while (next->kind == ADD || next->kind == NEG) {
@@ -252,6 +279,11 @@ ASTNode *additiveExp() {
 }
 
 ASTNode *statement() {
+
+  #ifdef DEBUG
+  printf("%s\n", __func__);
+  #endif
+
   ASTNode *stmt = makeNode(STMT);
   Token *token = peek();
   if (token->kind == KEYWORD && strcmp(token->lexeme, "return") == 0) {
@@ -276,6 +308,11 @@ ASTNode *statement() {
 }
 
 ASTNode *function() {
+
+  #ifdef DEBUG
+  printf("%s\n", __func__);
+  #endif
+
   ASTNode *func = makeNode(FUNC);
   Token *token = lex();
   if (token->kind == KEYWORD && strcmp(token->lexeme, "int") == 0) {
@@ -285,11 +322,9 @@ ASTNode *function() {
       Array *ss = malloc(sizeof(Array));
       initArray(ss, 10);
       func->ss = ss;
-      if (peek()->kind == KEYWORD || peek()->kind == ID) {
+      while (peek()->kind == KEYWORD || peek()->kind == ID) {
         ASTNode *stmt = statement();
         insertArray(func->ss, stmt);
-      } else {
-        return makeNode(ERR);
       }
       if (lex()->kind != CBRACE) {
         return makeNode(ERR);

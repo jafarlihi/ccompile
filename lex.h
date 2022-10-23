@@ -48,5 +48,6 @@ typedef struct Token {
 void initLexer(char *content);
 Token *lex();
 Token *peek();
+Token *peekSecond();
 
 #endif

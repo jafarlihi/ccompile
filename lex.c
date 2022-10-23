@@ -134,7 +134,7 @@ Token *lex() {
         return makeStrToken(KEYWORD, "int");
       }
     } else if (strncmp(lexer_content + lexer_position, "return", 6) == 0) {
-      if (isspace(lexer_content[lexer_position + 6]) || lexer_content[lexer_position + 6] == '\0') {
+      if (isspace(lexer_content[lexer_position + 6]) || lexer_content[lexer_position + 6] == '\0' || lexer_content[lexer_position + 6] == ';') {
         lexer_position += 6;
         return makeStrToken(KEYWORD, "return");
       }
@@ -166,5 +166,45 @@ Token *peek() {
     lexer_position--;
   }
   return lexed;
+}
+
+int countSpaces() {
+  int pos = lexer_position + 1;
+  while (lexer_content[pos] == ' ' || lexer_content[pos] == '\n') {
+    pos++;
+  }
+  return pos - lexer_position - 1;
+}
+
+Token *peekSecond() {
+  Token *lexed = lex();
+  Token *lexed2 = lex();
+  if (lexed->kind == ID || lexed->kind == KEYWORD) {
+    lexer_position -= strlen(lexed->lexeme);
+  } else if (lexed->kind == INTL) {
+    if (lexed->value == 0)
+      lexer_position -= 1;
+    else
+      lexer_position -= floor(log10(abs(lexed->value))) + 1;
+  } else if (lexed->kind == AND || lexed->kind == OR || lexed->kind == EQ || lexed->kind == NEQ || lexed->kind == LEE || lexed->kind == GEE) {
+    lexer_position -= 2;
+  } else {
+    lexer_position--;
+  }
+  int spaces = countSpaces();
+  if (lexed2->kind == ID || lexed2->kind == KEYWORD) {
+    lexer_position -= strlen(lexed2->lexeme);
+  } else if (lexed2->kind == INTL) {
+    if (lexed2->value == 0)
+      lexer_position -= 1;
+    else
+      lexer_position -= floor(log10(abs(lexed2->value))) + 1;
+  } else if (lexed2->kind == AND || lexed2->kind == OR || lexed2->kind == EQ || lexed2->kind == NEQ || lexed2->kind == LEE || lexed2->kind == GEE) {
+    lexer_position -= 2;
+  } else {
+    lexer_position--;
+  }
+  lexer_position -= spaces;
+  return lexed2;
 }
 

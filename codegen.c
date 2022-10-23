@@ -1,4 +1,5 @@
 #include "codegen.h"
+#include "array.h"
 #include <stdbool.h>
 
 int labelCounter = 0;
@@ -107,7 +108,15 @@ void expression(ASTNode *ast, char *output) {
   }
 }
 
+Array *vars;
+
+void initCodegen() {
+  vars = malloc(sizeof(Array));
+  initArray(vars, 10);
+}
+
 bool shouldRet = false;
+int stackIndex = 0;
 
 void generate(ASTNode *ast, char *output) {
   if (ast->type == FUNC) {
@@ -118,6 +127,33 @@ void generate(ASTNode *ast, char *output) {
   }
   if (ast->type == STMT && ast->stmtType == RETURN) {
     expression(ast->s1, output);
+  }
+  if (ast->type == STMT && ast->stmtType == VARASSNG) {
+    for (int i = 0; i < vars->used; i++) {
+      if (strcmp(vars->array[i]->fields.strval, ast->s1->fields.strval) == 0) {
+        printf("Can't declare variable twice\n");
+        exit(1);
+      }
+    }
+    expression(ast->s2, output);
+    sprintf(output + strlen(output), "push %%eax\n");
+    ast->s1->stackIndex = stackIndex;
+    insertArray(vars, ast->s1);
+    stackIndex -= 4;
+  }
+  if (ast->type == EXPR_S && ast->stmtType == VARASSNG) {
+    expression(ast->s1, output);
+    int offset = -1;
+    for (int i = 0; i < vars->used; i++) {
+      if (strcmp(vars->array[i]->fields.strval, ast->s1->fields.strval) == 0) {
+        offset = vars->array[i]->stackIndex;
+      }
+    }
+    if (offset == -1) {
+      printf("Can't resolve variable\n");
+      exit(1);
+    }
+    sprintf(output + strlen(output), "movl %%eax, %d(%%ebp)\n", offset);
   }
   if (ast->s1)
     generate(ast->s1, output);

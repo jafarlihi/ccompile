@@ -1,6 +1,7 @@
 #include "lex.h"
 #include "parse.h"
 #include "codegen.h"
+#include "array.h"
 #include <stdbool.h>
 
 char *astTypeToString(ASTType type) {
@@ -17,6 +18,8 @@ char *astTypeToString(ASTType type) {
       return "UNARY";
     case BINARY:
       return "BINARY";
+    case IDENT:
+      return "IDENT";
     case ERR:
       return "ERR";
   }
@@ -71,23 +74,25 @@ int main(int argc, char *argv[]) {
   fread(fcontent, fsize, 1, f);
   fclose(f);
 
-  /*
-     initLexer(fcontent);
-     Token *token;
-     do {
-     token = lex();
-     printf("%d", token->kind);
-     if (token->kind == KEYWORD || token->kind == ID)
-     printf(" - %s", token->lexeme);
-     if (token->kind == INTL)
-     printf(" - %d", token->value);
-     printf("\n");
-     } while (token->kind != EOF);
-     */
+#ifdef DEBUG
+  initLexer(fcontent);
+  Token *token;
+  do {
+    token = lex();
+    printf("%d", token->kind);
+    if (token->kind == KEYWORD || token->kind == ID)
+      printf(" - %s", token->lexeme);
+    if (token->kind == INTL)
+      printf(" - %d", token->value);
+    printf("\n");
+  } while (token->kind != EOF);
+#endif
 
   ASTNode *ast = parse(fcontent);
 
-  //printASTNode(ast);
+#ifdef DEBUG
+  printASTNode(ast);
+#endif
 
   char *output = calloc(99999, sizeof(char));
   if (!hasError(ast)) {
@@ -98,6 +103,7 @@ int main(int argc, char *argv[]) {
         break;
       }
     }
+    initCodegen();
     generate(ast, output);
     //printf("%s\n", output);
     storeData("./assembly.s", output);
