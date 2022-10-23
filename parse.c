@@ -2,7 +2,7 @@
 #include "lex.h"
 
 ASTNode *additiveExp();
-ASTNode *expr();
+ASTNode *lorexp();
 
 ASTNode *makeNode(ASTType type) {
   ASTNode *node = malloc(sizeof(ASTNode));
@@ -73,20 +73,71 @@ ASTNode *binaryOp(Token *token) {
   return binaryOp->fields.charval || binaryOp->fields.strval ? binaryOp : makeNode(ERR);
 }
 
-ASTNode *factor() {
+void initArray(Array *a, size_t initialSize) {
+  a->array = malloc(initialSize * sizeof(ASTNode *));
+  a->used = 0;
+  a->size = initialSize;
+}
+
+void insertArray(Array *a, ASTNode* node) {
+  if (a->used == a->size) {
+    a->size *= 2;
+    a->array = realloc(a->array, a->size * sizeof(ASTNode *));
+  }
+  a->array[a->used++] = node;
+}
+
+void freeArray(Array *a) {
+  free(a->array);
+  a->array = NULL;
+  a->used = a->size = 0;
+}
+
+ASTNode *ident() {
   Token *next = lex();
+  if (next->kind != ID)
+    return makeNode(ERR);
+  ASTNode *identN = makeNode(IDENT);
+  identN->fields.strval = next->lexeme;
+  return identN;
+}
+
+ASTNode *pexpression() {
+  Token *next = peek();
+  if (next->kind == ID) {
+    ASTNode *identN = ident();
+    next = lex();
+    if (next->kind != ASNG)
+      return makeNode(ERR);
+    ASTNode *expr = pexpression();
+    ASTNode *res = makeNode(EXPR);
+    res->exprType = VAR_ASSNG;
+    res->s1 = identN;
+    res->s2 = expr;
+    return expr;
+  }
+  return lorexp();
+}
+
+ASTNode *factor() {
+  Token *next = peek();
   if (next->kind == OPARAN) {
-    ASTNode *exprN = expr();
+    lex();
+    ASTNode *exprN = pexpression();
     if (lex()->kind != CPARAN) {
       return makeNode(ERR);
     }
     return exprN;
   } else if (next->kind == INTL) {
+    lex();
     ASTNode *expr = makeNode(EXPR);
     expr->fields.intval = next->value;
     expr->exprType = CONSTANT;
     return expr;
+  } else if (next->kind == ID) {
+    return ident();
   } else {
+    lex();
     ASTNode *unary = unaryOp(next);
     if (unary->type == ERR) return unary;
     ASTNode *factorN = factor();
@@ -149,7 +200,7 @@ ASTNode *landexp() {
   return eqexpN;
 }
 
-ASTNode *expr() {
+ASTNode *lorexp() {
   ASTNode *landexpN = landexp();
   Token *next = peek();
   while (next->kind == OR) {
@@ -202,11 +253,23 @@ ASTNode *additiveExp() {
 
 ASTNode *statement() {
   ASTNode *stmt = makeNode(STMT);
-  Token *token = lex();
-  if (token->kind != KEYWORD || strcmp(token->lexeme, "return") != 0)
-    return makeNode(ERR);
-  stmt->stmtType = RETURN;
-  stmt->s1 = expr();
+  Token *token = peek();
+  if (token->kind == KEYWORD && strcmp(token->lexeme, "return") == 0) {
+    lex();
+    stmt->stmtType = RETURN;
+    stmt->s1 = pexpression();
+  } else if (token->kind == ID) {
+    stmt->stmtType = EXPR_S;
+    stmt->s1 = pexpression();
+  } else if (token->kind == KEYWORD && strcmp(token->lexeme, "int") == 0) {
+    lex();
+    stmt->stmtType = VARASSNG;
+    stmt->s1 = ident();
+    if (peek()->kind == ASNG) {
+      lex();
+      stmt->s2 = pexpression();
+    }
+  }
   if (lex()->kind != SEMICOL)
     return makeNode(ERR);
   return stmt;
@@ -219,10 +282,18 @@ ASTNode *function() {
     token = lex();
     func->fields.strval = token->lexeme;
     if (token->kind == ID && lex()->kind == OPARAN && lex()->kind == CPARAN && lex()->kind == OBRACE) {
-      ASTNode *stmt = statement();
-      func->s1 = stmt;
-      if (lex()->kind != CBRACE)
+      Array *ss = malloc(sizeof(Array));
+      initArray(ss, 10);
+      func->ss = ss;
+      if (peek()->kind == KEYWORD || peek()->kind == ID) {
+        ASTNode *stmt = statement();
+        insertArray(func->ss, stmt);
+      } else {
         return makeNode(ERR);
+      }
+      if (lex()->kind != CBRACE) {
+        return makeNode(ERR);
+      }
     } else {
       return makeNode(ERR);
     }

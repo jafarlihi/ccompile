@@ -156,7 +156,10 @@ Token *peek() {
   if (lexed->kind == ID || lexed->kind == KEYWORD) {
     lexer_position -= strlen(lexed->lexeme);
   } else if (lexed->kind == INTL) {
-    lexer_position -= floor(log10(abs(lexed->value))) + 1;
+    if (lexed->value == 0)
+      lexer_position -= 1;
+    else
+      lexer_position -= floor(log10(abs(lexed->value))) + 1;
   } else if (lexed->kind == AND || lexed->kind == OR || lexed->kind == EQ || lexed->kind == NEQ || lexed->kind == LEE || lexed->kind == GEE) {
     lexer_position -= 2;
   } else {

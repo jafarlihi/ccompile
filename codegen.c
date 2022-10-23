@@ -111,7 +111,7 @@ void generate(ASTNode *ast, char *output) {
     sprintf(output + strlen(output), ".globl %s\n", ast->fields.strval);
     sprintf(output + strlen(output), "%s:\n", ast->fields.strval);
   }
-  if (ast->type == STMT) {
+  if (ast->type == STMT && ast->stmtType == RETURN) {
     expression(ast->s1, output);
   }
   if (ast->s1)
@@ -120,7 +120,10 @@ void generate(ASTNode *ast, char *output) {
     generate(ast->s2, output);
   if (ast->s3)
     generate(ast->s3, output);
-
+  if (ast->ss)
+    for (int i = 0; i < ast->ss->used; i++) {
+      generate(ast->ss->array[i], output);
+    }
   if (ast->type == STMT && ast->stmtType == RETURN)
     sprintf(output + strlen(output), "ret\n");
 }

@@ -30,6 +30,10 @@ void printASTNode(ASTNode *node) {
     printASTNode(node->s2);
   if (node->s3)
     printASTNode(node->s3);
+  if (node->ss)
+    for (int i = 0; i < node->ss->used; i++) {
+      printASTNode(node->ss->array[i]);
+    }
 }
 
 bool hasError(ASTNode *node) {
@@ -41,6 +45,11 @@ bool hasError(ASTNode *node) {
     return true;
   if (node->s3 && hasError(node->s3))
     return true;
+  if (node->ss)
+    for (int i = 0; i < node->ss->used; i++) {
+      if (hasError(node->ss->array[i]))
+        return true;
+    }
   return false;
 }
 
@@ -80,7 +89,7 @@ int main(int argc, char *argv[]) {
 
   //printASTNode(ast);
 
-  char *output = calloc(2048, sizeof(char));
+  char *output = calloc(99999, sizeof(char));
   if (!hasError(ast)) {
     char *path = strdup(argv[1]);
     for (int i = 1; i < strlen(path); i++) {
