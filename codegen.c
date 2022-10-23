@@ -2,7 +2,17 @@
 #include "array.h"
 #include <stdbool.h>
 
+Array *vars;
+
+void initCodegen() {
+  vars = malloc(sizeof(Array));
+  initArray(vars, 10);
+}
+
 int labelCounter = 0;
+bool shouldRet = false;
+int stackIndex = 0;
+
 
 void expression(ASTNode *ast, char *output) {
   if (ast->exprType == UNARY_OP) {
@@ -19,6 +29,15 @@ void expression(ASTNode *ast, char *output) {
     }
   } else if (ast->exprType == CONSTANT) {
     sprintf(output + strlen(output), "movl $%d, %%eax\n", ast->fields.intval);
+  } else if (ast->type == IDENT) {
+     for (int i = 0; i < vars->used; i++) {
+      if (strcmp(vars->array[i]->fields.strval, ast->fields.strval) == 0) {
+        sprintf(output + strlen(output), "movl %d(%%ebp), %%eax\n", vars->array[i]->stackIndex);
+        return;
+      }
+    }
+    printf("Can't resolve variable\n");
+    exit(1);
   } else if (ast->exprType == BINARY_OP && strcmp(ast->s1->fields.strval, "||") != 0 && strcmp(ast->s1->fields.strval, "&&") != 0) {
     expression(ast->s2, output);
     sprintf(output + strlen(output), "push %%rax\n");
@@ -108,16 +127,6 @@ void expression(ASTNode *ast, char *output) {
   }
 }
 
-Array *vars;
-
-void initCodegen() {
-  vars = malloc(sizeof(Array));
-  initArray(vars, 10);
-}
-
-bool shouldRet = false;
-int stackIndex = 0;
-
 void generate(ASTNode *ast, char *output) {
   if (ast->type == FUNC) {
     sprintf(output + strlen(output), ".globl %s\n", ast->fields.strval);
@@ -141,7 +150,7 @@ void generate(ASTNode *ast, char *output) {
     insertArray(vars, ast->s1);
     stackIndex -= 4;
   }
-  if (ast->type == EXPR_S && ast->stmtType == VARASSNG) {
+  if (ast->type == STMT && ast->stmtType == EXPR_S) {
     expression(ast->s1, output);
     int offset = -1;
     for (int i = 0; i < vars->used; i++) {
