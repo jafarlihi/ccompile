@@ -19,20 +19,20 @@ void expression(ASTNode *ast, char *output) {
     if (ast->s2)
       expression(ast->s2, output);
     if (ast->s1->fields.charval == '-')
-      sprintf(output + strlen(output), "neg %%eax\n");
+      sprintf(output + strlen(output), "neg %%rax\n");
     else if (ast->s1->fields.charval == '~')
-      sprintf(output + strlen(output), "not %%eax\n");
+      sprintf(output + strlen(output), "not %%rax\n");
     else if (ast->s1->fields.charval == '!') {
-      sprintf(output + strlen(output), "cmpl $0, %%eax\n");
-      sprintf(output + strlen(output), "movl $0, %%eax\n");
+      sprintf(output + strlen(output), "cmpq $0, %%rax\n");
+      sprintf(output + strlen(output), "movq $0, %%rax\n");
       sprintf(output + strlen(output), "sete %%al\n");
     }
   } else if (ast->exprType == CONSTANT) {
-    sprintf(output + strlen(output), "movl $%d, %%eax\n", ast->fields.intval);
+    sprintf(output + strlen(output), "movq $%d, %%rax\n", ast->fields.intval);
   } else if (ast->type == IDENT) {
      for (int i = 0; i < vars->used; i++) {
       if (strcmp(vars->array[i]->fields.strval, ast->fields.strval) == 0) {
-        sprintf(output + strlen(output), "movl %d(%%ebp), %%eax\n", vars->array[i]->stackIndex);
+        sprintf(output + strlen(output), "movq %d(%%rbp), %%rax\n", vars->array[i]->stackIndex);
         return;
       }
     }
@@ -43,61 +43,62 @@ void expression(ASTNode *ast, char *output) {
     sprintf(output + strlen(output), "push %%rax\n");
     expression(ast->s3, output);
     if (ast->s1->fields.charval == '-') {
-      sprintf(output + strlen(output), "movl %%eax, %%ecx\n");
+      sprintf(output + strlen(output), "movq %%rax, %%rcx\n");
       sprintf(output + strlen(output), "pop %%rax\n");
-      sprintf(output + strlen(output), "subl %%ecx, %%eax\n");
+      sprintf(output + strlen(output), "subq %%rcx, %%rax\n");
     }
     if (ast->s1->fields.charval == '+') {
       sprintf(output + strlen(output), "pop %%rcx\n");
-      sprintf(output + strlen(output), "addl %%ecx, %%eax\n");
+      sprintf(output + strlen(output), "addq %%rcx, %%rax\n");
     }
     if (ast->s1->fields.charval == '*') {
       sprintf(output + strlen(output), "pop %%rcx\n");
-      sprintf(output + strlen(output), "imul %%ecx, %%eax\n");
+      sprintf(output + strlen(output), "imul %%rcx, %%rax\n");
     }
     if (ast->s1->fields.charval == '/') {
-      sprintf(output + strlen(output), "movl %%eax, %%ecx\n");
+      sprintf(output + strlen(output), "movq %%rax, %%rcx\n");
       sprintf(output + strlen(output), "pop %%rax\n");
-      sprintf(output + strlen(output), "cdq\n");
-      sprintf(output + strlen(output), "idivl %%ecx\n");
+      sprintf(output + strlen(output), "cqo\n");
+      sprintf(output + strlen(output), "idivq %%rcx\n");
     }
     if (strcmp(ast->s1->fields.strval, "==") == 0) {
       sprintf(output + strlen(output), "pop %%rcx\n");
-      sprintf(output + strlen(output), "cmpl %%eax, %%ecx\n");
-      sprintf(output + strlen(output), "movl $0, %%eax\n");
+      sprintf(output + strlen(output), "cmpq %%rax, %%rcx\n");
+      sprintf(output + strlen(output), "movq $0, %%rax\n");
       sprintf(output + strlen(output), "sete %%al\n");
     }
     if (strcmp(ast->s1->fields.strval, "!=") == 0) {
       sprintf(output + strlen(output), "pop %%rcx\n");
-      sprintf(output + strlen(output), "cmpl %%eax, %%ecx\n");
-      sprintf(output + strlen(output), "movl $0, %%eax\n");
+      sprintf(output + strlen(output), "cmpq %%rax, %%rcx\n");
+      sprintf(output + strlen(output), "movq $0, %%rax\n");
       sprintf(output + strlen(output), "setne %%al\n");
     }
     if (ast->s1->fields.charval == '<') {
       sprintf(output + strlen(output), "pop %%rcx\n");
-      sprintf(output + strlen(output), "cmpl %%eax, %%ecx\n");
-      sprintf(output + strlen(output), "movl $0, %%eax\n");
+      sprintf(output + strlen(output), "cmpq %%rax, %%rcx\n");
+      sprintf(output + strlen(output), "movq $0, %%rax\n");
       sprintf(output + strlen(output), "setl %%al\n");
     }
     if (strcmp(ast->s1->fields.strval, "<=") == 0) {
       sprintf(output + strlen(output), "pop %%rcx\n");
-      sprintf(output + strlen(output), "cmpl %%eax, %%ecx\n");
-      sprintf(output + strlen(output), "movl $0, %%eax\n");
+      sprintf(output + strlen(output), "cmpq %%rax, %%rcx\n");
+      sprintf(output + strlen(output), "movq $0, %%rax\n");
       sprintf(output + strlen(output), "setle %%al\n");
     }
     if (ast->s1->fields.charval == '>') {
       sprintf(output + strlen(output), "pop %%rcx\n");
-      sprintf(output + strlen(output), "cmpl %%eax, %%ecx\n");
-      sprintf(output + strlen(output), "movl $0, %%eax\n");
+      sprintf(output + strlen(output), "cmpq %%rax, %%rcx\n");
+      sprintf(output + strlen(output), "movq $0, %%rax\n");
       sprintf(output + strlen(output), "setg %%al\n");
     }
     if (strcmp(ast->s1->fields.strval, ">=") == 0) {
       sprintf(output + strlen(output), "pop %%rcx\n");
-      sprintf(output + strlen(output), "cmpl %%eax, %%ecx\n");
-      sprintf(output + strlen(output), "movl $0, %%eax\n");
+      sprintf(output + strlen(output), "cmpq %%rax, %%rcx\n");
+      sprintf(output + strlen(output), "movq $0, %%rax\n");
       sprintf(output + strlen(output), "setge %%al\n");
     }
   } else if (ast->exprType == BINARY_OP && strcmp(ast->s1->fields.strval, "||") == 0) {
+    // TODO: Convert to 64bit
     expression(ast->s2, output);
     int clauseLabel = labelCounter++;
     int endLabel = labelCounter++;
@@ -145,7 +146,7 @@ void generate(ASTNode *ast, char *output) {
       }
     }
     expression(ast->s2, output);
-    sprintf(output + strlen(output), "push %%eax\n");
+    sprintf(output + strlen(output), "push %%rax\n");
     ast->s1->stackIndex = stackIndex;
     insertArray(vars, ast->s1);
     stackIndex -= 4;
@@ -162,7 +163,7 @@ void generate(ASTNode *ast, char *output) {
       printf("Can't resolve variable\n");
       exit(1);
     }
-    sprintf(output + strlen(output), "movl %%eax, %d(%%ebp)\n", offset);
+    sprintf(output + strlen(output), "movq %%rax, %d(%%rbp)\n", offset);
   }
   if (ast->s1)
     generate(ast->s1, output);
