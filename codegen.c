@@ -2,7 +2,7 @@
 #include "array.h"
 #include <stdbool.h>
 
-Array *vars;
+Array *vars = NULL;
 
 void initCodegen() {
   vars = malloc(sizeof(Array));
@@ -164,6 +164,19 @@ void generate(ASTNode *ast, char *output) {
       exit(1);
     }
     sprintf(output + strlen(output), "movq %%rax, %d(%%rbp)\n", offset);
+  }
+  if (ast->type == IDENT) {
+    int offset = -1;
+    for (int i = 0; i < vars->used; i++) {
+      if (strcmp(vars->array[i]->fields.strval, ast->s1->fields.strval) == 0) {
+        offset = vars->array[i]->stackIndex;
+      }
+    }
+    if (offset == -1) {
+      printf("Can't resolve variable\n");
+      exit(1);
+    }
+    sprintf(output + strlen(output), "movq %d(%%rbp), %%rax\n", offset);
   }
   if (ast->s1)
     generate(ast->s1, output);

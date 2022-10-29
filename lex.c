@@ -143,6 +143,7 @@ Token *lex() {
 
   char *lexeme = malloc(64);
   int starting_lexer_position = lexer_position;
+
   do {
     lexeme[lexer_position - starting_lexer_position] = lexer_content[lexer_position];
     lexer_position++;

@@ -72,6 +72,7 @@ int main(int argc, char *argv[]) {
 
   char *fcontent = malloc(fsize + 1);
   fread(fcontent, fsize, 1, f);
+  fcontent[fsize] = '\0';
   fclose(f);
 
 #ifdef DEBUG
