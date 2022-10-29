@@ -168,16 +168,17 @@ Token *peek() {
   return lexed;
 }
 
-int countSpaces() {
-  int pos = lexer_position + 1;
-  while (lexer_content[pos] == ' ' || lexer_content[pos] == '\n') {
+int countSpaces(int lexer_position) {
+  int pos = lexer_position;
+  while (lexer_content[pos] == ' ' || lexer_content[pos] == '\n')
     pos++;
-  }
-  return pos - lexer_position - 1;
+  return pos - lexer_position;
 }
 
 Token *peekSecond() {
   Token *lexed = lex();
+  int first_lex_lexer_position = lexer_position;
+  int spaces = countSpaces(first_lex_lexer_position);
   Token *lexed2 = lex();
   if (lexed->kind == ID || lexed->kind == KEYWORD) {
     lexer_position -= strlen(lexed->lexeme);
@@ -191,7 +192,6 @@ Token *peekSecond() {
   } else {
     lexer_position--;
   }
-  int spaces = countSpaces();
   if (lexed2->kind == ID || lexed2->kind == KEYWORD) {
     lexer_position -= strlen(lexed2->lexeme);
   } else if (lexed2->kind == INTL) {
