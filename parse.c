@@ -10,6 +10,7 @@ ASTNode *makeNode(ASTType type) {
   node->s1 = NULL;
   node->s2 = NULL;
   node->s3 = NULL;
+  node->ss = NULL;
   node->type = type;
   node->fields.intval = 0;
   node->fields.charval = '\0';
