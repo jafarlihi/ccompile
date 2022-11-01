@@ -145,8 +145,12 @@ void generate(ASTNode *ast, char *output) {
         exit(1);
       }
     }
-    expression(ast->s2, output);
-    sprintf(output + strlen(output), "push %%rax\n");
+    if (ast->s2) {
+      expression(ast->s2, output);
+      sprintf(output + strlen(output), "push %%rax\n");
+    } else {
+      sprintf(output + strlen(output), "push $0\n");
+    }
     ast->s1->stackIndex = stackIndex;
     insertArray(vars, ast->s1);
     stackIndex -= 4;
@@ -155,7 +159,7 @@ void generate(ASTNode *ast, char *output) {
     expression(ast->s1, output);
     int offset = -1;
     for (int i = 0; i < vars->used; i++) {
-      if (strcmp(vars->array[i]->fields.strval, ast->s1->fields.strval) == 0) {
+      if (strcmp(vars->array[i]->fields.strval, ast->fields.strval) == 0) {
         offset = vars->array[i]->stackIndex;
       }
     }
@@ -168,7 +172,7 @@ void generate(ASTNode *ast, char *output) {
   if (ast->type == IDENT) {
     int offset = -1;
     for (int i = 0; i < vars->used; i++) {
-      if (strcmp(vars->array[i]->fields.strval, ast->s1->fields.strval) == 0) {
+      if (strcmp(vars->array[i]->fields.strval, ast->fields.strval) == 0) {
         offset = vars->array[i]->stackIndex;
       }
     }
